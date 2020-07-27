@@ -1,5 +1,5 @@
 import './reset.css';
-import './style.css';
+import './style.scss';
 
 const cardTemplate = require('./card.pug');
 const tableTemplate = require('./table.pug');

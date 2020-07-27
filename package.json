@@ -23,6 +23,8 @@
     "html-webpack-plugin": "^4.3.0",
     "pug": "^3.0.0",
     "pug-loader": "^2.4.0",
+    "sass": "^1.26.10",
+    "sass-loader": "^9.0.2",
     "webpack-dev-server": "^3.11.0"
   }
 }

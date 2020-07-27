@@ -1,6 +1,4 @@
 h3 #{title}
 table
   each repo in repos
-    tr
-      td
-        a(target="__blank" href=repo.html_url) #{repo.full_name}
+    tr: td: a(target="__blank" href=repo.html_url) #{repo.full_name}
