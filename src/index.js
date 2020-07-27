@@ -9,7 +9,6 @@ window.onload = () => {
   if (window.addEventListener) {
     document.addEventListener('DOMMouseScroll', dealScroll, false);
   }
-
   document.onmousewheel = dealScroll;
 
   document.getElementById('sobre_link').addEventListener('click', () => {
@@ -17,9 +16,7 @@ window.onload = () => {
   })
   
   document.getElementById('desafio_link').addEventListener('click', () => {
-    smoothScroll(home, () => {
-      smoothScroll(sobre);
-    });
+    smoothScroll(home, () => { smoothScroll(sobre); });
   })
 
   loadUser("artiumdominus");
@@ -40,32 +37,21 @@ function dealScroll(event) {
     delta -= event.detail / 2;
   }
 
-  const homeCurrentPosition = home.offsetTop;
-  const sobreCurrentPosition = sobre.offsetTop;
+  const frames = [home, sobre];
+  const deltaToUp = delta < 0;
 
-  if (delta < 0) {
-    if (homeCurrentPosition > -window.innerHeight) {
-      const homeNextPosition = parseInt(homeCurrentPosition) + (delta * 20);
-      home.style.top =
-        `${homeNextPosition > -window.innerHeight
-            ? homeNextPosition
-            : -window.innerHeight}px`;
-    } else if (sobreCurrentPosition > -window.innerHeight) {
-      const sobreNextPosition = parseInt(sobreCurrentPosition) + (delta * 20);
-      sobre.style.top =
-        `${sobreNextPosition > -window.innerHeight
-            ? sobreNextPosition
-            : -window.innerHeight}px`;
-    }
-  } else if (delta > 0) {
-    if (sobreCurrentPosition < 0) {
-      const sobreNextPosition = parseInt(sobreCurrentPosition) + (delta * 20);
-      sobre.style.top =
-        `${sobreNextPosition < 0 ? sobreNextPosition : 0}px`;
-    } else if (homeCurrentPosition < 0) {
-      const homeNextPosition = parseInt(homeCurrentPosition) + (delta * 20);
-      home.style.top =
-        `${homeNextPosition < 0 ? homeNextPosition : 0}px`;
+  while (frames.length > 0) {
+    let frame = deltaToUp ? frames.shift() : frames.pop();
+    let currentPosition = frame.offsetTop;
+    if (deltaToUp ? currentPosition > -window.innerHeight : currentPosition < 0) {
+      let nextPosition = parseInt(currentPosition) + (delta * 20);
+      frame.style.top =
+       `${
+          deltaToUp
+            ? (nextPosition > -window.innerHeight ? nextPosition : -window.innerHeight)
+            : (nextPosition < 0 ? nextPosition : 0)
+        }px`;
+      break;
     }
   }
 }
@@ -89,38 +75,39 @@ function smoothScroll(frame, callback = undefined, delta = 20) {
   }
 }
 
-function getJSON(url, handler) {
-  const xhttp = new XMLHttpRequest();
+function getJSON(url) {
+  return new Promise((resolve, reject) => {
+    const xhttp = new XMLHttpRequest();
 
-  xhttp.onreadystatechange = function() {
-    if (this.readyState === 4 && this.status === 200) {
-      const obj = JSON.parse(this.responseText);
-      handler(obj);
+    xhttp.onreadystatechange = function() {
+      if (this.readyState === 4 && this.status === 200) {
+        const obj = JSON.parse(this.responseText);
+        resolve(obj);
+      }
     }
-  }
 
-  xhttp.open('GET', url, true);
-  xhttp.send();
-}
-
-function loadUser(username) {
-  getJSON(`https://api.github.com/users/${username}`, userModel => {
-
-    card.innerHTML = cardTemplate(userModel);
-
-    document.getElementById('ver_repositorios').addEventListener('click', () => {
-      loadTable(`https://api.github.com/users/${username}/repos`, 'Lista dos Repositórios');
-    });
-    document.getElementById('ver_favoritos').addEventListener('click', () => {
-      loadTable(`https://api.github.com/users/${username}/starred`, 'Lista dos Favoritos');
-    });
+    xhttp.open('GET', url, true);
+    xhttp.send();
   });
 }
 
-function loadTable(url, title) {
-  getJSON(url, reposModel => {
-    card.classList.add('listing');
-    const repos = reposModel.slice(0, 10);
-    document.querySelector('.table-column').innerHTML = tableTemplate({ title, repos });
+async function loadUser(username) {
+  const userModel = await getJSON(`https://api.github.com/users/${username}`);
+
+  card.innerHTML = cardTemplate(userModel);
+
+  document.getElementById('ver_repositorios').addEventListener('click', () => {
+    loadTable(`https://api.github.com/users/${username}/repos`, 'Lista dos Repositórios');
   });
+  document.getElementById('ver_favoritos').addEventListener('click', () => {
+    loadTable(`https://api.github.com/users/${username}/starred`, 'Lista dos Favoritos');
+  });
+}
+
+async function loadTable(url, title) {
+  const reposModel = await getJSON(url);
+
+  card.classList.add('listing');
+  const repos = reposModel.slice(0, 10);
+  document.querySelector('.table-column').innerHTML = tableTemplate({ title, repos });
 }
