@@ -1,0 +1,13 @@
+.picture-column
+  .picture(style="background-image: url("+avatar_url+")")
+  a(target="__blank" href=html_url) Visitar Perfil
+.info-column
+  .info
+    .info-line.name #{login}
+    .info-line Repositorios: #{public_repos}
+    .info-line Seguidores: #{followers}
+    .info-line Seguindo: #{following}
+  .buttons
+    button#ver_repositorios(focusable="false") VER REPOSITÓRIOS
+    button#ver_favoritos(focusable="false") VER FAVORITOS
+.table-column
